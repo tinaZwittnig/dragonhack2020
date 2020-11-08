@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="materialize/css/materialize.css" media="screen"/>
+    <title>Title</title>
+</head>
+<body>
+ <nav>
+    <div class="nav-wrapper green green darken-4">
+      <a href="spletna.html" class="brand-logo" > &nbsp IoT Farm </a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="pastir.html">Pastir</a></li>
+        <li><a href="napajalisce.html"> Napajališče </a></li>
+        <li><a href="njiva.html"> Njiva &nbsp</a></li>
+      </ul>
+    </div>
+  </nav>
+ <div class="row">
+         <!-- Pastir -->
+      <div class="col s4 offset-s2">
+   <div class="card">
+        <div class="card-image">
+        <img src="81845567-large-round-straw-bales-in-a-field-in-summerr.jpg">
+            <span class="card-title "><a href="pastir.html" class="black-text"><b>Pastir</b></a></span>
+      </div>
+    <div class="card-content">
+
+      <p> <b>OK</b></p> <!--Če je karkoli narobe napiše NOT OK + se obarva rdeče -->
+    </div>
+    <div class="card-tabs green green darken-4">
+      <ul class="tabs tabs-fixed-width">
+        <li class="tab"><a href="#temperatura" class="green-text text-darken-4">Temperatura okolja</a></li>
+        <li class="tab"><a href="#napetost" class="green-text text-darken-4">Napetost akumulatorja</a></li>
+      </ul>
+    </div>
+    <div class="card-content green lighten-5">
+        <div id="temperatura"> Temperatura okolja: <span id="pastir_temp">32</span> C</div>
+        <div id="napetost"> Napetost akumulatorja: <span id="pastir_napetost">11.3</span> V </div>
+    </div>
+  </div>
+      </div>
+
+          <!-- Njiva -->
+     <div class="grid-example col s4">
+       <div class="card">
+            <div class="card-image">
+        <img src="5b7e8df12abf5250ee43d34ec4a36c90.jpg">
+                <span class="card-title "><a href="pastir.html" class="white-text"><b>Njiva</b></a></span>
+      </div>
+    <div class="card-content">
+
+      <p> <b>OK</b></p> <!--Če je karkoli narobe napiše NOT OK + se    obarva rdeče -->
+    </div>
+    <div class="card-tabs green green darken-4">
+      <ul class="tabs tabs-fixed-width">
+        <li class="tab"><a href="#vlaznost" class="green-text text-darken-4">Vlažnost zemlje</a></li>
+        <li class="tab"><a href="#sonce" class="green-text text-darken-4">Obsijanost s soncem</a></li>
+
+
+      </ul>
+    </div>
+    <div class="card-content green lighten-5">
+      <div id="vlaznost"> Vlažnost zemlje je 85 % </div>
+      <div id="sonce"> Obsijanost s soncem: 50% dneva </div>
+    </div>
+  </div>
+      </div>
+
+     <!-- Napajališče -->
+
+      <div class="col s8 offset-s2 ">
+       <div class="card">
+            <div class="card-image">
+        <img src="cows_at_trough.jpg">
+                <span class="card-title "><a href="napajalisce.html" class="white-text"> <b>Napajališče</b></a></span>
+      </div>
+    <div class="card-content">
+
+      <p> <b>OK</b></p> <!--Če je karkoli narobe napiše NOT OK + se obarva rdeče -->
+    </div>
+    <div class="card-tabs green green darken-4">
+      <ul class="tabs tabs-fixed-width">
+        <li class="tab"><a href="#temperaturaC" class="green-text text-darken-4">Temperatura črpalke</a></li>
+        <li class="tab"><a href="#napetostC" class="green-text text-darken-4">Napetost akumulatorja</a></li>
+          <li class="tab"><a href="#crpalka" class="green-text text-darken-4">Ali črpalka deluje?</a></li>
+          <li class="tab"><a href="#voda" class="green-text text-darken-4">Ali je dovolj vode?</a></li>
+
+      </ul>
+    </div>
+    <div class="card-content green lighten-5">
+        <div id="temperaturaC"> Temperatura črpalke je <span id="crpalka_temp">45</span> stopinj celzija</div>
+        <div id="napetostC"> Napetost akumulatorja je <span id="crpalka_napetost">11.8</span> V </div>
+        <div id="crpalka"> Črpalka trenutno deluje.</div>
+        <div id="voda"> V napajalniku je dovolj vode. </div>
+    </div>
+  </div>
+      </div>
+     <div>
+         <p><b>Status: </b></p><p id="status"></p> <br>
+         <p><b>Last message: </b></p><p id="message"></p>
+     </div>
+ </div>
+ <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+ <script type="text/javascript" src="js/jquery.min.js"></script>
+ <script type="text/javascript" src="js/mqttws31.js"></script>
+ <script type="text/javascript">
+ 	  M.AutoInit();
+ </script>
+
+
+<!-- MQTT KODA -->
+ <script type="text/javascript">
+     var host = 'openfarm.v8.si';
+     var port = 9001;
+     var topic = '#';
+     var useTLS = true;
+     var useSSL = true;
+     var cleansession = true;
+     var mqtt;
+     var reconnectTimeout = 5000;
+
+     function MQTTconnect() {
+         if (typeof path == "undefined") {
+             path = '';
+         }
+         mqtt = new Paho.MQTT.Client(host, port, "mqtt_panel");
+         var options = {
+             timeout: 3,
+             useSSL: true,
+             cleanSession: cleansession,
+             userName: "malina",
+             password: "Malina1234",
+             onSuccess: onConnect,
+             onFailure: function (message) {
+                 $('#status').html("Connection failed: " + message.errorMessage + "Retrying...");
+                 setTimeout(MQTTconnect, reconnectTimeout);
+             }
+         };
+
+         mqtt.onConnectionLost = onConnectionLost;
+         mqtt.onMessageArrived = onMessageArrived;
+         console.log("Host: "+ host + ", Port: " + port + ", Path: " + path + " TLS: " + useTLS);
+         mqtt.connect(options);
+     };
+
+     function onConnect() {
+         $('#status').html('Connected to ' + host + ':' + port + path);
+         mqtt.subscribe(topic, {qos: 0});
+     };
+
+     function onConnectionLost(response) {
+         setTimeout(MQTTconnect, reconnectTimeout);
+         $('#status').html("Connection lost: " + responseObject.errorMessage + ". Reconnecting...");
+     };
+
+     function onMessageArrived(message) {
+         var topic = message.destinationName;
+         var payload = message.payloadString;
+         console.log("Topic: " + topic + ", Message payload: " + payload);
+         $('#message').html(topic + ', ' + payload);
+
+         switch (topic) {
+             case 'pastir/napetost':
+                 $('#pastir_napetost').html(payload);
+                 break;
+             case 'pastir/temperatura':
+                 $('#pastir_temp').html(payload);
+                 break;
+             case 'crpalka/temperatura':
+                 $('#crpalka_temp').html(payload);
+                 break;
+             case 'crpalka/napetost':
+                 $('#crpalka_napetost').html(payload);
+                 break;
+             case 'crpalka/working':
+                 if (payload === 1) {
+                     $('#crpalka').html("Črpalka trenutno deluje");
+                 } else {
+                     $('#crpalka').html("Črpalka trenutno počiva");
+                 }
+                 break;
+             case 'crpalka/voda':
+                 if (payload === 1) {
+                     $('#crpalka').html("V zalogovniku je dovolj vode");
+                 } else {
+                     $('#crpalka').html("Zalogovnik je prazen");
+                 }
+                 break;
+             default: console.log('Error: Data do not match the MQTT topic.'); break;
+         }
+     };
+     $(document).ready(function() {
+         MQTTconnect();
+     });
+
+
+ </script>
+
+</body>
+</html>

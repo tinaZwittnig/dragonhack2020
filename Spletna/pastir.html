@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="materialize/css/materialize.css" media="screen"/>
+    <title>Title</title>
+</head>
+<body>
+ <nav>
+    <div class="nav-wrapper green green darken-4">
+      <a href="spletna.html" class="brand-logo"> &nbsp IoT Farm </a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="pastir.html"><b>Pastir</b></a></li>
+        <li><a href="napajalisce.html"> Napajališče </a></li>
+        <li><a href="njiva.html"> Njiva &nbsp</a></li>
+      </ul>
+    </div>
+  </nav>
+ <div class="row">
+
+         <!-- Temperatura okolja -->
+      <div class="grid-example col s8 m6">
+    <h2 class="header green-text text-darken-4">Temperatura okolja</h2>
+    <div class="card horizontal">
+      <div class="card-image">
+        <img src="81845567-large-round-straw-bales-in-a-field-in-summer.jpg">
+      </div>
+      <div class="card-stacked">
+        <div class="card-content">
+            <p>Temperatura okolja je <span id="pastir_temp">25</span> stopinj celzija. <br><br> Živina ne potrebuje dodatne vode ali sence. </p>
+             <!-- Temperatura > 30 stopinj : preveri stanje vode.
+             T < 15 sopinj : živina potrebuje zavetje pred mrazom. Pirporočamo prestavitev živali v hlev. -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+     <!-- Napetost akumulatorja -->
+      <div class="grid-example col s8 m6">
+    <h2 class="header green-text text-darken-4">Napetost akumulatorja</h2>
+    <div class="card horizontal">
+      <div class="card-image">
+        <img src="solar-2.jpg">
+      </div>
+      <div class="card-stacked">
+        <div class="card-content">
+            <p>Napetost na akumulatorju je <span id="pastir_napetost">11.3</span> V.
+<br><br> Za optimalno delovanje pastirja mora biti napetost na akumulatorju višja od 11.2 V.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+      </div>
+ <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+ <script type="text/javascript" src="js/jquery.min.js"></script>
+ <script type="text/javascript" src="js/mqttws31.js"></script>
+ <script type="text/javascript">
+ 	  M.AutoInit();
+ </script>
+ <!-- MQTT KODA -->
+ <script type="text/javascript">
+     var host = 'openfarm.v8.si';
+     var port = 9001;
+     var topic = '#';
+     var useTLS = true;
+     var useSSL = true;
+     var cleansession = true;
+     var mqtt;
+     var reconnectTimeout = 5000;
+
+     function MQTTconnect() {
+         if (typeof path == "undefined") {
+             path = '';
+         }
+         mqtt = new Paho.MQTT.Client(host, port, "mqtt_panel");
+         var options = {
+             timeout: 3,
+             useSSL: true,
+             cleanSession: cleansession,
+             userName: "malina",
+             password: "Malina1234",
+             onSuccess: onConnect,
+             onFailure: function (message) {
+                 $('#status').html("Connection failed: " + message.errorMessage + "Retrying...");
+                 setTimeout(MQTTconnect, reconnectTimeout);
+             }
+         };
+
+         mqtt.onConnectionLost = onConnectionLost;
+         mqtt.onMessageArrived = onMessageArrived;
+         console.log("Host: "+ host + ", Port: " + port + ", Path: " + path + " TLS: " + useTLS);
+         mqtt.connect(options);
+     };
+
+     function onConnect() {
+         $('#status').html('Connected to ' + host + ':' + port + path);
+         mqtt.subscribe(topic, {qos: 0});
+     };
+
+     function onConnectionLost(response) {
+         setTimeout(MQTTconnect, reconnectTimeout);
+         $('#status').html("Connection lost: " + responseObject.errorMessage + ". Reconnecting...");
+     };
+
+     function onMessageArrived(message) {
+         var topic = message.destinationName;
+         var payload = message.payloadString;
+         console.log("Topic: " + topic + ", Message payload: " + payload);
+         $('#message').html(topic + ', ' + payload);
+
+         switch (topic) {
+             case 'pastir/napetost':
+                 $('#pastir_napetost').html(payload);
+                 break;
+             case 'pastir/temperatura':
+                 $('#pastir_temp').html(payload);
+                 break;
+             default: console.log('Error: Data do not match the MQTT topic.'); break;
+         }
+     };
+     $(document).ready(function() {
+         MQTTconnect();
+     });
+
+
+ </script>
+</body>
+</html>
